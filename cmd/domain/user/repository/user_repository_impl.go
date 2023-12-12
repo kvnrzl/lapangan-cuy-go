@@ -20,10 +20,10 @@ func (u *UserRepositoryPostgresImpl) Update(ctx context.Context, db *gorm.DB, us
 	return db.Save(user)
 }
 
-func (u *UserRepositoryPostgresImpl) Get(ctx context.Context, db *gorm.DB, user *models.User) (models.User, error) {
+func (u *UserRepositoryPostgresImpl) Get(ctx context.Context, db *gorm.DB, user *models.User) (models.User, *gorm.DB) {
 	res := db.First(&user)
 
-	return *user, res.Error
+	return *user, res
 }
 
 func (u *UserRepositoryPostgresImpl) Delete(ctx context.Context, db *gorm.DB, user *models.User) *gorm.DB {

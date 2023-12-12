@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type OperationalTime struct {
+type FieldOperationalTime struct {
 	ID        uuid.UUID `gorm:"primaryKey"`
 	FieldID   uuid.UUID
 	Field     Field `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`

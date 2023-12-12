@@ -1,4 +1,4 @@
-package helper
+package db
 
 import (
 	"com.lapangan.cuy/cmd/common"
@@ -9,7 +9,7 @@ import (
 func ConnectToTurso(dbName string, dbAuthToken string) *sql.DB {
 	dbUrl := fmt.Sprintf("libsql://%s.turso.io?authToken=%s", dbName, dbAuthToken)
 	db, err := sql.Open("libsql", dbUrl)
-	common.FailOnError(err, "failed to connect to db")
+	common.PanicOnError(err, "failed to connect to db")
 
 	return db
 }

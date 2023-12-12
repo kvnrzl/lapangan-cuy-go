@@ -2,7 +2,7 @@ package models
 
 import "github.com/google/uuid"
 
-type PaymentType struct {
+type OrderPaymentType struct {
 	ID   uuid.UUID `gorm:"primaryKey"`
 	Name string
 }

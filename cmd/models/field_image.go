@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Image struct {
+type FieldImage struct {
 	ID          uuid.UUID `gorm:"primaryKey"`
 	Path        string
 	Name        string

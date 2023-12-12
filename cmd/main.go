@@ -1,7 +1,8 @@
 package main
 
 import (
-	"com.lapangan.cuy/cmd/helper"
+	"com.lapangan.cuy/cmd/common"
+	"com.lapangan.cuy/cmd/helper/db"
 	_ "github.com/libsql/libsql-client-go/libsql"
 	"log"
 	"os"
@@ -10,12 +11,12 @@ import (
 func main() {
 	log.Println("bismillahirrohmanirrohim - start")
 
-	helper.LoadEnvDevFile()
+	common.LoadEnvDevFile()
 
-	dbName := os.Getenv("DB_NAME")
-	dbAuthToken := os.Getenv("DB_AUTH_TOKEN")
+	dbName := os.Getenv("DB_NAME_TURSO")
+	dbAuthToken := os.Getenv("DB_AUTH_TOKEN_TURSO")
 
-	_ = helper.ConnectToTurso(dbName, dbAuthToken)
+	_ = db.ConnectToTurso(dbName, dbAuthToken)
 
 	log.Println("alhamdulillah - end")
 }

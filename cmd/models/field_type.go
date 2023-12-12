@@ -7,6 +7,7 @@ import "github.com/google/uuid"
 // BOLA
 
 type FieldType struct {
-	ID   uuid.UUID `gorm:"primaryKey"`
-	Name string
+	ID       uuid.UUID `gorm:"primaryKey"`
+	Name     string
+	IconPath string
 }

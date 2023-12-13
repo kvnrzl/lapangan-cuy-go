@@ -55,7 +55,7 @@ func (u *UserServiceImpl) UserLogin(ctx context.Context, payload []byte) (token 
 	}
 
 	// if no error, set session
-	
+
 	// return the token
 
 	return "", nil

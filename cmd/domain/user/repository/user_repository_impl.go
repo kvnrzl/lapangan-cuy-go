@@ -12,20 +12,27 @@ type UserRepositoryPostgresImpl struct{}
 //	return &UserRepositoryPostgresImpl{}
 //}
 
-func (u *UserRepositoryPostgresImpl) Create(ctx context.Context, db *gorm.DB, user *models.User) *gorm.DB {
-	return db.Create(user)
+func (u *UserRepositoryPostgresImpl) CreateUser(ctx context.Context, db *gorm.DB, user *models.User) *gorm.DB {
+	return db.WithContext(ctx).Create(user)
 }
 
-func (u *UserRepositoryPostgresImpl) Update(ctx context.Context, db *gorm.DB, user *models.User) *gorm.DB {
-	return db.Save(user)
+func (u *UserRepositoryPostgresImpl) UpdateUser(ctx context.Context, db *gorm.DB, user *models.User) *gorm.DB {
+	return db.WithContext(ctx).Save(user)
 }
 
-func (u *UserRepositoryPostgresImpl) Get(ctx context.Context, db *gorm.DB, user *models.User) (models.User, *gorm.DB) {
-	res := db.First(&user)
+func (u *UserRepositoryPostgresImpl) FindUserByEmail(ctx context.Context, db *gorm.DB, email string) (models.User, *gorm.DB) {
+	var user models.User
+	res := db.WithContext(ctx).Where("email = ?", email).First(&user)
+
+	return user, res
+}
+
+func (u *UserRepositoryPostgresImpl) FindUser(ctx context.Context, db *gorm.DB, user *models.User) (models.User, *gorm.DB) {
+	res := db.WithContext(ctx).First(&user)
 
 	return *user, res
 }
 
 func (u *UserRepositoryPostgresImpl) Delete(ctx context.Context, db *gorm.DB, user *models.User) *gorm.DB {
-	return db.Delete(&user)
+	return db.WithContext(ctx).Delete(&user)
 }

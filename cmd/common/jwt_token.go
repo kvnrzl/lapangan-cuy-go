@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -16,13 +17,20 @@ type Claims struct {
 
 func GenerateToken(userID uuid.UUID) (string, string, error) {
 
+	expAccessTokenString := os.Getenv("EXP_ACCESS_TOKEN")
+	expAccessToken, err := strconv.Atoi(expAccessTokenString)
+	if err != nil {
+		newError := HandleError(err, "error convert string to int")
+		return "", "", newError
+	}
+
 	// prepare the object Claims
 	accessTokenClaims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "subjectToken",
-			Issuer:    "com.field.cuy",
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+			Issuer:    "com.lapangan.cuy",
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * time.Duration(expAccessToken))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -34,16 +42,25 @@ func GenerateToken(userID uuid.UUID) (string, string, error) {
 	// make the accessToken more secure with the jwt_secret
 	accessTokenString, err := accessToken.SignedString(os.Getenv("JWT_SECRET"))
 	log.Println("accessTokenString : ", accessTokenString)
-	LogOnError(err, "cannot signed jwt access token string")
-
+	if err != nil {
+		newError := HandleError(err, "cannot signed jwt access token string")
+		return "", "", newError
+	}
 	// ========= refresh token =======
+
+	expRefreshTokenString := os.Getenv("EXP_REFRESH_TOKEN")
+	expRefreshToken, err := strconv.Atoi(expRefreshTokenString)
+	if err != nil {
+		newError := HandleError(err, "error convert string to int")
+		return "", "", newError
+	}
 
 	refreshTokenClaims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "subjectToken",
-			Issuer:    "com.field.cuy",
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 30)),
+			Issuer:    "com.lapangan.cuy",
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * time.Duration(expRefreshToken))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -56,8 +73,8 @@ func GenerateToken(userID uuid.UUID) (string, string, error) {
 	refreshTokenString, err := refreshToken.SignedString(os.Getenv("JWT_SECRET"))
 	log.Println("refreshTokenString : ", refreshTokenString)
 	if err != nil {
-		LogOnError(err, "cannot signed jwt refresh token string")
-		return "", "", nil
+		newError := HandleError(err, "cannot signed jwt refresh token string")
+		return "", "", newError
 	}
 
 	return accessTokenString, refreshTokenString, err
@@ -66,14 +83,17 @@ func GenerateToken(userID uuid.UUID) (string, string, error) {
 func RefreshToken(refreshTokenString string) (string, error) {
 	// validate refresh token
 	claims, err := ValidateToken(refreshTokenString)
-	LogOnError(err, "error validate refresh token")
+	if err != nil {
+		newError := HandleError(err, "error validate refresh token")
+		return "", newError
+	}
 
 	//create new access token
 	newAccessTokenClaims := Claims{
 		UserID: claims.UserID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "subjectToken",
-			Issuer:    "com.field.cuy",
+			Issuer:    "com.lapangan.cuy",
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
@@ -87,8 +107,8 @@ func RefreshToken(refreshTokenString string) (string, error) {
 	NewAccessTokenString, err := NewAccessToken.SignedString(os.Getenv("JWT_SECRET"))
 	log.Println("NewAccessTokenString : ", NewAccessTokenString)
 	if err != nil {
-		LogOnError(err, "cannot signed jwt access token string")
-		return "", err
+		newError := HandleError(err, "cannot signed jwt access token string")
+		return "", newError
 	}
 
 	return NewAccessTokenString, nil
@@ -105,7 +125,10 @@ func ValidateToken(tokenString string) (*Claims, error) {
 		return os.Getenv("JWT_SECRET"), nil
 	})
 
-	LogOnError(err, "error parse token string")
+	if err != nil {
+		newError := HandleError(err, "error parse token string")
+		return nil, newError
+	}
 
 	// parse token to Claims struct
 	if claims, ok := token.Claims.(Claims); ok && token.Valid {

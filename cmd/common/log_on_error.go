@@ -1,9 +1,14 @@
 package common
 
-import "log"
+import (
+	"errors"
+	"log"
+)
 
-func LogOnError(err error, msg string) {
-	if err != nil {
-		log.Printf(`%s: %s`, msg, err.Error())
-	}
+func HandleError(err error, msg string) error {
+	newError := errors.New(msg)
+	log.Printf(`%s: %s`, msg, err.Error())
+
+	return newError
+
 }

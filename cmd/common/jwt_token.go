@@ -1,6 +1,7 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -88,14 +89,22 @@ func RefreshToken(refreshTokenString string) (string, error) {
 		return "", newError
 	}
 
-	//create new access token
+	expAccessTokenString := os.Getenv("EXP_ACCESS_TOKEN")
+	expAccessToken, err := strconv.Atoi(expAccessTokenString)
+	if err != nil {
+		newError := HandleError(err, "error convert string to int")
+		return "", newError
+	}
+
+	// create new access token
 	newAccessTokenClaims := Claims{
 		UserID: claims.UserID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   "subjectToken",
 			Issuer:    "com.lapangan.cuy",
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * time.Duration(expAccessToken))),
+			//ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+			IssuedAt: jwt.NewNumericDate(time.Now()),
 		},
 	}
 
@@ -132,9 +141,33 @@ func ValidateToken(tokenString string) (*Claims, error) {
 
 	// parse token to Claims struct
 	if claims, ok := token.Claims.(Claims); ok && token.Valid {
+		// check issuer
+		issuer, err := claims.GetIssuer()
+		if err != nil {
+			newError := HandleError(err, "error - getting claims issuer")
+
+			return nil, newError
+		}
+
+		if issuer != "com.lapangan.cuy" {
+			return nil, errors.New("error - issuer is not valid")
+		}
+
+		// check the expiration of the token
+		exp, err := claims.GetExpirationTime()
+		if err != nil {
+			newError := HandleError(err, "error - getting token expiration time")
+
+			return nil, newError
+		}
+
+		if exp.Before(time.Now()) {
+			return nil, errors.New("error - token has been expired")
+		}
+
 		return &claims, nil
 	}
 
-	return nil, err
+	return nil, errors.New("error - there's something error")
 
 }
